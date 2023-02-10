@@ -29,8 +29,8 @@ import tensorflow as tf
 # tf.__version__
 
 
-# stocks=['AAPL']
-stocks=['AAPL','MSFT','GOOG','AMZN']
+stocks=['AAPL']
+#stocks=['AAPL','MSFT','GOOG','AMZN']
 
 #Defining MAPE function
 def MAPE(Y_actual,Y_Predicted):
@@ -109,14 +109,14 @@ for val in stocks:
     
 
     model=Sequential()
-    model.add(LSTM(50,input_shape=(100,1)))
+    model.add(LSTM(50,input_shape=(100,1), activation='sigmoid'))
     # model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
     # model.add(LSTM(25,return_sequences=True))
     # model.add(LSTM(12))
     model.add(Dense(1))
 
     opt=tf.keras.optimizers.Adam(
-    learning_rate=0.0005,
+    learning_rate=0.0010,
     name="Adam",)
     model.compile(loss='mean_squared_error',optimizer=opt)
 
