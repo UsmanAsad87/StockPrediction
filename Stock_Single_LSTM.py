@@ -65,7 +65,7 @@ for val in stocks:
     plt.ylabel('Stock Price')
     plt.xlabel('Time(yr)')
     plt.legend(['Stock Price'], loc='upper left')
-    plt.savefig(val+' Dataset'+'.png')
+    plt.savefig('Graphs_Single_LSTM/'+val+' Dataset'+'.png')
     plt.cla()
     # plt.show()
 
@@ -109,10 +109,10 @@ for val in stocks:
     
 
     model=Sequential()
-    model.add(LSTM(50,input_shape=(100,1), activation='sigmoid'))
-    # model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
-    # model.add(LSTM(25,return_sequences=True))
-    # model.add(LSTM(12))
+    model.add(LSTM(100,return_sequences=True,input_shape=(100,1), activation='sigmoid'))
+    model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
+    model.add(LSTM(25,return_sequences=True))
+    model.add(LSTM(12))
     model.add(Dense(1))
 
     opt=tf.keras.optimizers.Adam(
@@ -185,7 +185,7 @@ for val in stocks:
     plt.xlabel("Time(yr)")
     # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
     plt.legend(['Stock Price','Train', 'Test'], loc='upper left')
-    plt.savefig(val+' train_test'+'.png')
+    plt.savefig('Graphs_Single_LSTM/'+val+' train_test'+'.png')
     plt.cla()
     # plt.show()
 
@@ -198,7 +198,7 @@ for val in stocks:
     plt.xlabel("Time")
     # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
     plt.legend(['Stock Price', 'Test'], loc='upper left')
-    plt.savefig(val+' test'+'.png')
+    plt.savefig('Graphs_Single_LSTM/'+val+' test'+'.png')
     plt.cla()
     # plt.show()
 
@@ -208,7 +208,7 @@ for val in stocks:
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Test'], loc='upper left')
-    plt.savefig(val+' loss'+'.png')
+    plt.savefig('Graphs_Single_LSTM/'+val+' loss'+'.png')
     plt.show()
 
 
