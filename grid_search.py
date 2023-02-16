@@ -28,7 +28,7 @@ model = KerasClassifier(model=create_model, epochs=100, batch_size=10, verbose=0
 optimizer = ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']
 param_grid = dict(model__optimizer=optimizer)
 grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1, cv=3)
-grid_result = grid.fit(X, Y)
+grid_result = grid.fit(X, Y) 
 # summarize results
 print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
 means = grid_result.cv_results_['mean_test_score']

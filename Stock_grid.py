@@ -9,7 +9,8 @@ import pandas_datareader as pdr
 import pandas as pd
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error as mae
-from sklearn.metrics import mean_absolute_percentage_error as mapeE
+from sklearn.metrics import fbeta_score, make_scorer
+from sklearn.model_selection import GridSearchCV
 
 # For reading stock data from yahoo
 from pandas_datareader.data import DataReader
@@ -35,9 +36,7 @@ stocks=['AAPL']
 
 #Defining MAPE function
 def MAPE(Y_actual,Y_Predicted):
-    # print(Y_actual)
-    mape=mapeE(Y_actual,Y_Predicted)
-    # mape = np.mean(np.abs((Y_actual - Y_Predicted)/Y_actual))*100
+    mape = np.mean(np.abs((Y_actual - Y_Predicted)/Y_actual))*100
     return mape
 
 # convert an array of values into a dataset matrix
@@ -49,7 +48,13 @@ def create_dataset(dataset, time_step=1):
         dataY.append(dataset[i + time_step, 0])
     return np.array(dataX), np.array(dataY)
 
+def MSE(y_true,y_pred):
+    mse = mean_squared_error(y_true, y_pred)
+    return mse
 
+
+def two_scorer():
+    return make_scorer(MSE, greater_is_better=True) # cha
 
 for val in stocks:
     print("\n\n**************"+val+"**************\n\n")
@@ -82,12 +87,12 @@ for val in stocks:
     # print(df1)
 
     ##splitting dataset into train and test split
-    training_size=int(len(df1)*0.80)
-    test_size=len(df1)-training_size
-    train_data,test_data=df1[0:training_size,:],df1[training_size:len(df1),:1]
+    # training_size=int(len(df1)*0.80)
+    # test_size=len(df1)-training_size
+    # train_data,test_data=df1[0:training_size,:],df1[training_size:len(df1),:1]
 
-    print("Train Data Size: "+str(training_size))
-    print("Test Data Size: "+str(test_size))
+    # print("Train Data Size: "+str(training_size))
+    # print("Test Data Size: "+str(test_size))
    
 
     # train_data
@@ -96,119 +101,116 @@ for val in stocks:
 
     # reshape into X=t,t+1,t+2,t+3 and Y=t+4
     time_step = 100
-    X_train, y_train = create_dataset(train_data, time_step)
-    X_test, ytest = create_dataset(test_data, time_step)
-
-    print(X_train.shape), print(y_train.shape)
-
-    print(X_test.shape), print(ytest.shape)
+    X, Y = create_dataset(df1, time_step)
 
     # reshape input to be [samples, time steps, features] which is required for LSTM
-    X_train =X_train.reshape(X_train.shape[0],X_train.shape[1] , 1)
-    X_test = X_test.reshape(X_test.shape[0],X_test.shape[1] , 1)
+    X =X.reshape(X.shape[0],X.shape[1] , 1)
 
     # ### Create the Stacked LSTM model
 
     
 
-    # model=Sequential()
-    # model.add(LSTM(100,input_shape=(100,1), activation='sigmoid'))
-    # # model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
-    # # model.add(LSTM(25,return_sequences=True))
-    # # model.add(LSTM(12))
-    # model.add(Dense(1))
+    model=Sequential()
+    model.add(LSTM(100,return_sequences=True,input_shape=(100,1), activation='sigmoid'))
+    # model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
+    # model.add(LSTM(25,return_sequences=True))
+    # model.add(LSTM(12))
+    model.add(Dense(1))
 
     # opt=tf.keras.optimizers.Adam(
     # learning_rate=0.0010,
     # name="Adam",)
     # model.compile(loss='mean_squared_error',optimizer=opt)
 
-    # model.summary()
+    model.summary()
 
 
-    
+    optimizer = ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']
+    param_grid = dict(model__optimizer=optimizer)
+    grid = GridSearchCV(estimator=model, param_grid=param_grid,scoring=two_scorer(), n_jobs=-1, cv=3)
+    grid_result = grid.fit(X, Y) 
+    # summarize results
+    # print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
 
 
 
     # hist=model.fit(X_train,y_train,validation_data=(X_test,ytest),epochs=20,batch_size=16,verbose=1)
     # print(hist.history)
     # model.save("saved_model_single/"+val+"/my_model.h5")
-    model = keras.models.load_model("saved_model_single/"+val+"/my_model.h5")
+    # model = keras.models.load_model("saved_model_single/"+val+"/my_model.h5")
 
 
 
 
-    ### Lets Do the prediction and check performance metrics
-    train_predict=model.predict(X_train)
-    test_predict=model.predict(X_test)
+    # ### Lets Do the prediction and check performance metrics
+    # train_predict=model.predict(X_train)
+    # test_predict=model.predict(X_test)
 
-    ##Transformback to original form
+    # ##Transformback to original form
     # train_predict=scaler.inverse_transform(train_predict)
     # test_predict=scaler.inverse_transform(test_predict)
 
-    ### Calculate RMSE performance metrics
-    import math
-    from sklearn.metrics import mean_squared_error
+    # ### Calculate RMSE performance metrics
+    # import math
+    # from sklearn.metrics import mean_squared_error
 
     # y_train2=scaler.inverse_transform(y_train.reshape(-1,1))
     # y_test2=scaler.inverse_transform(ytest.reshape(-1,1))
-    y_train2=y_train.reshape(-1,1)
-    y_test2=ytest.reshape(-1,1)
 
-    # print("Y_trsain: "+str(y_train2))
-    # print("train_predict: "+str(train_predict))
+    # # print("Y_trsain: "+str(y_train2))
+    # # print("train_predict: "+str(train_predict))
 
-    ### Train Data RMSE,MSE,MAPE,MAE
-    train_err=math.sqrt(mean_squared_error(y_train2,train_predict))
-    print("Train RMSE: "+str(train_err))
-    print("Train MSE: "+str(mean_squared_error(y_train2,train_predict)))
-    print("Train MAPE: "+str(MAPE(y_train2,train_predict)))
-    print("Train MAE: "+str(mae(y_train2,train_predict)))
+    # ### Train Data RMSE,MSE,MAPE,MAE
+    # train_err=math.sqrt(mean_squared_error(y_train2,train_predict))
+    # print("Train RMSE: "+str(train_err))
+    # print("Train MSE: "+str(mean_squared_error(y_train2,train_predict)))
+    # print("Train MAPE: "+str(MAPE(y_train2,train_predict)))
+    # print("Train MAE: "+str(mae(y_train2,train_predict)))
 
 
 
-    ### Test Data RMSE,MSE,MAPE,MAE
-    test_err=math.sqrt(mean_squared_error(y_test2,test_predict))
-    print("Test RMSE: "+str(test_err))
-    print("Test MSE: "+str(mean_squared_error(y_test2,test_predict)))
-    print("Test MAPE: "+str(MAPE(y_test2,test_predict)))
-    print("Test MAE: "+str(mae(y_test2,test_predict)))
+    # ### Test Data RMSE,MSE,MAPE,MAE
+    # test_err=math.sqrt(mean_squared_error(y_test2,test_predict))
+    # print("Test RMSE: "+str(test_err))
+    # print("Test MSE: "+str(mean_squared_error(y_test2,test_predict)))
+    # print("Test MAPE: "+str(MAPE(y_test2,test_predict)))
+    # print("Test MAE: "+str(mae(y_test2,test_predict)))
 
-    ### Plotting 
-    # shift train predictions for plotting
-    look_back=100
-    trainPredictPlot = np.empty_like(df1)
-    trainPredictPlot[:, :] = np.nan
-    trainPredictPlot[look_back:len(train_predict)+look_back, :] = train_predict
-    # shift test predictions for plotting
-    testPredictPlot = np.empty_like(df1)
-    testPredictPlot[:, :] = np.nan
-    testPredictPlot[len(train_predict)+(look_back*2)+1:len(df1)-1, :] = test_predict
-    # plot baseline and predictions
-    plt.plot(scaler.inverse_transform(df1))
-    plt.plot(trainPredictPlot)
-    plt.plot(testPredictPlot)
-    plt.title('Model Prediction of Test and Train Data of '+val)
-    plt.ylabel('Stock Price')
-    plt.xlabel("Time(yr)")
-    # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
-    plt.legend(['Stock Price','Train', 'Test'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' train_test'+'.png')
-    plt.cla()
-    # plt.show()
+    # ### Plotting 
+    # # shift train predictions for plotting
+    # look_back=100
+    # trainPredictPlot = np.empty_like(df1)
+    # trainPredictPlot[:, :] = np.nan
+    # trainPredictPlot[look_back:len(train_predict)+look_back, :] = train_predict
+    # # shift test predictions for plotting
+    # testPredictPlot = np.empty_like(df1)
+    # testPredictPlot[:, :] = np.nan
+    # testPredictPlot[len(train_predict)+(look_back*2)+1:len(df1)-1, :] = test_predict
+    # # plot baseline and predictions
+    # plt.plot(scaler.inverse_transform(df1))
+    # plt.plot(trainPredictPlot)
+    # plt.plot(testPredictPlot)
+    # plt.title('Model Prediction of Test and Train Data of '+val)
+    # plt.ylabel('Stock Price')
+    # plt.xlabel("Time(yr)")
+    # # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
+    # plt.legend(['Stock Price','Train', 'Test'], loc='upper left')
+    # plt.savefig('Graphs_Single_LSTM/'+val+' train_test'+'.png')
+    # plt.cla()
+    # # plt.show()
 
 
-    size=len(test_predict)
-    plt.plot(scaler.inverse_transform(df1)[-size:])
-    plt.plot(test_predict,color='green')
-    plt.title('Model Prediction of Test Data '+val)
-    plt.ylabel('Stock Price')
-    plt.xlabel("Time")
-    # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
-    plt.legend(['Stock Price', 'Test'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' test'+'.png')
-    plt.cla()
-    # plt.show()
+    # size=len(test_predict)
+    # plt.plot(scaler.inverse_transform(df1)[-size:])
+    # plt.plot(test_predict,color='green')
+    # plt.title('Model Prediction of Test Data '+val)
+    # plt.ylabel('Stock Price')
+    # plt.xlabel("Time")
+    # # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
+    # plt.legend(['Stock Price', 'Test'], loc='upper left')
+    # plt.savefig('Graphs_Single_LSTM/'+val+' test'+'.png')
+    # plt.cla()
+    # # plt.show()
 
     # plt.plot(hist.history['loss'])
     # plt.plot(hist.history['val_loss'])
