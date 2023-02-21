@@ -30,12 +30,15 @@ import tensorflow as tf
 # tf.__version__
 
 
+
 stocks=['AAPL']
 #stocks=['AAPL','MSFT','GOOG','AMZN']
 
 #Defining MAPE function
 def MAPE(Y_actual,Y_Predicted):
     # print(Y_actual)
+    # Y_actual=Y_actual+0.001
+    # Y_Predicted=Y_Predicted+0.001
     mape=mapeE(Y_actual,Y_Predicted)
     # mape = np.mean(np.abs((Y_actual - Y_Predicted)/Y_actual))*100
     return mape
@@ -107,33 +110,40 @@ for val in stocks:
     X_train =X_train.reshape(X_train.shape[0],X_train.shape[1] , 1)
     X_test = X_test.reshape(X_test.shape[0],X_test.shape[1] , 1)
 
-    # ### Create the Stacked LSTM model
+    ### Create the Stacked LSTM model
 
     
 
-    # model=Sequential()
-    # model.add(LSTM(100,input_shape=(100,1), activation='sigmoid'))
-    # # model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
-    # # model.add(LSTM(25,return_sequences=True))
-    # # model.add(LSTM(12))
-    # model.add(Dense(1))
+    
+    batch=32
+    epochs=10
+    lr=0.01
+    optim= "Adam" #"SGD" # "RMSprop" #
+    units=100
 
-    # opt=tf.keras.optimizers.Adam(
-    # learning_rate=0.0010,
-    # name="Adam",)
-    # model.compile(loss='mean_squared_error',optimizer=opt)
+    model=Sequential()
+    model.add(LSTM(units,input_shape=(100,1), activation='sigmoid'))
+    # model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
+    # model.add(LSTM(25,return_sequences=True))
+    # model.add(LSTM(12))
+    model.add(Dense(1))
 
-    # model.summary()
+    opt=tf.keras.optimizers.Adam(
+    learning_rate=lr,
+    name=optim,)
+    model.compile(loss='mean_squared_error',optimizer=opt)
+
+    model.summary()
 
 
     
 
 
 
-    # hist=model.fit(X_train,y_train,validation_data=(X_test,ytest),epochs=20,batch_size=16,verbose=1)
-    # print(hist.history)
-    # model.save("saved_model_single/"+val+"/my_model.h5")
-    model = keras.models.load_model("saved_model_single/"+val+"/my_model.h5")
+    hist=model.fit(X_train,y_train,validation_data=(X_test,ytest),epochs=epochs,batch_size=batch,verbose=1)
+    print(hist.history)
+    model.save("saved_model_single/"+val+"/my_model.h5")
+    # model = keras.models.load_model("saved_model_single/"+val+"/my_model.h5")
 
 
 
@@ -142,18 +152,18 @@ for val in stocks:
     train_predict=model.predict(X_train)
     test_predict=model.predict(X_test)
 
-    ##Transformback to original form
-    # train_predict=scaler.inverse_transform(train_predict)
-    # test_predict=scaler.inverse_transform(test_predict)
+    #Transformback to original form
+    train_predict=scaler.inverse_transform(train_predict)
+    test_predict=scaler.inverse_transform(test_predict)
 
     ### Calculate RMSE performance metrics
     import math
     from sklearn.metrics import mean_squared_error
 
-    # y_train2=scaler.inverse_transform(y_train.reshape(-1,1))
-    # y_test2=scaler.inverse_transform(ytest.reshape(-1,1))
-    y_train2=y_train.reshape(-1,1)
-    y_test2=ytest.reshape(-1,1)
+    y_train2=scaler.inverse_transform(y_train.reshape(-1,1))
+    y_test2=scaler.inverse_transform(ytest.reshape(-1,1))
+    # y_train2=y_train.reshape(-1,1)
+    # y_test2=ytest.reshape(-1,1)
 
     # print("Y_trsain: "+str(y_train2))
     # print("train_predict: "+str(train_predict))
@@ -210,13 +220,13 @@ for val in stocks:
     plt.cla()
     # plt.show()
 
-    # plt.plot(hist.history['loss'])
-    # plt.plot(hist.history['val_loss'])
-    # plt.title('Model loss')
-    # plt.ylabel('Loss')
-    # plt.xlabel('Epoch')
-    # plt.legend(['Train', 'Test'], loc='upper left')
-    # plt.savefig('Graphs_Single_LSTM/'+val+' loss'+'.png')
+    plt.plot(hist.history['loss'])
+    plt.plot(hist.history['val_loss'])
+    plt.title('Model loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.savefig('Graphs_Single_LSTM/'+val+' loss'+'.png')
     # plt.show()
 
 
