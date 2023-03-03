@@ -11,6 +11,34 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error as mae
 from sklearn.metrics import mean_absolute_percentage_error as mapeE
 
+
+
+from keras.layers import Layer
+from keras import backend as K
+
+class RBFLayer(Layer):
+    def __init__(self, units, gamma, **kwargs):
+        super(RBFLayer, self).__init__(**kwargs)
+        self.units = units
+        self.gamma = K.cast_to_floatx(gamma)
+
+    def build(self, input_shape):
+        self.mu = self.add_weight(name='mu',
+                                  shape=(int(input_shape[1]), self.units),
+                                  initializer='uniform',
+                                  trainable=True)
+        super(RBFLayer, self).build(input_shape)
+
+    def call(self, inputs):
+        diff = K.expand_dims(inputs) - self.mu
+        l2 = K.sum(K.pow(diff,2), axis=1)
+        res = K.exp(-1 * self.gamma * l2)
+        return res
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], self.units)
+
+
 # For reading stock data from yahoo
 from pandas_datareader.data import DataReader
 import yfinance as yf
@@ -26,8 +54,12 @@ from tensorflow import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import LSTM
+from keras.layers import Dense
 from keras.layers import Dropout
+from keras.layers import TimeDistributed
+from keras.layers import Bidirectional
 import tensorflow as tf
+from keras.layers import Reshape
 # tf.__version__
 
 
@@ -117,18 +149,46 @@ for val in stocks:
 
     
     batch=32
-    epochs=30
+    epochs=10
     lr=0.01
     optim= "Adam" #"SGD" # "RMSprop" #
-    units=100
+    units=50
 
-    model=Sequential()
-    model.add(LSTM(units,input_shape=(100,1), activation='sigmoid'))
-    model.add(Dropout(.2))
-    # model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
-    # model.add(LSTM(25,return_sequences=True))
-    # model.add(LSTM(12))
+    # # model=Sequential()
+    # model = Sequential()
+    # model.add(Dense(100, input_shape=(100,)))
+    # model.add(RBFLayer(100, 0.5))
+    # # model.add(Dropout(.2))
+    # model.add(RBFLayer(50, 0.5))
+    # # model.add(Dropout(.2))
+    # # model.add(RBFLayer(25, 0.5))
+    # # model.add(Dropout(.2))
+
+
+    # # model.add(Bidirectional(LSTM(units, activation='sigmoid'), input_shape=(100, 1)))
+    # # model.add(Bidirectional(LSTM(50, activation='sigmoid')))
+    # # model.add(TimeDistributed(Dense(1, activation='sigmoid')))
+    # model.add(LSTM(50,))
+    # model.add(LSTM(25,))
+    # # model.add(LSTM(12))
+    # model.add(Dense(1))
+
+
+
+
+
+    model = Sequential()
+    model.add(Dense(100, input_shape=(100,)))
+    model.add(RBFLayer(100, 0.5))
+    model.add(RBFLayer(50, 0.5))
     model.add(Dense(1))
+
+
+
+
+
+
+
 
     opt=tf.keras.optimizers.Adam(
     learning_rate=lr,

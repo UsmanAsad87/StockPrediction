@@ -117,18 +117,25 @@ for val in stocks:
 
     
     batch=32
-    epochs=30
+    epochs=20
     lr=0.01
     optim= "Adam" #"SGD" # "RMSprop" #
     units=100
 
     model=Sequential()
-    model.add(LSTM(units,input_shape=(100,1), activation='sigmoid'))
-    model.add(Dropout(.2))
-    # model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
-    # model.add(LSTM(25,return_sequences=True))
-    # model.add(LSTM(12))
-    model.add(Dense(1))
+
+    model.add(LSTM(units = 100, return_sequences = True, input_shape = (100, 1),activation='sigmoid'))
+    model.add(Dropout(0.2))
+
+    model.add(LSTM(units = 50))
+    model.add(Dropout(0.2))
+
+    # Output layer
+    model.add(Dense(units = 1))
+
+
+
+    # model.add(Dense(1))
 
     opt=tf.keras.optimizers.Adam(
     learning_rate=lr,
