@@ -21,7 +21,6 @@ import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
 from tensorflow import keras
-from sklearn.metrics import mean_squared_error, r2_score
  
 
 from tensorflow.keras.models import Sequential
@@ -29,12 +28,17 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import LSTM
 from keras.layers import Dropout
 import tensorflow as tf
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import MinMaxScaler
+from datetime import datetime
+from sklearn.metrics import mean_squared_error, r2_score
 # tf.__version__
 
 
 
-stocks=['AMZN']
-# stocks=['AAPL','MSFT','GOOG','AMZN']
+stocks=['AAPL']
+#stocks=['AAPL','MSFT','GOOG','AMZN']
 
 #Defining MAPE function
 def MAPE(Y_actual,Y_Predicted):
@@ -109,75 +113,36 @@ for val in stocks:
     print(X_test.shape), print(ytest.shape)
 
     # reshape input to be [samples, time steps, features] which is required for LSTM
-    X_train =X_train.reshape(X_train.shape[0],X_train.shape[1] , 1)
-    X_test = X_test.reshape(X_test.shape[0],X_test.shape[1] , 1)
+    X_train = X_train.reshape(X_train.shape[0], X_train.shape[1])
+    X_test = X_test.reshape(X_test.shape[0], X_test.shape[1])
+
 
     ### Create the Stacked LSTM model
 
-    
-
-    
-    batch=32
-    epochs=30
-    lr=0.01
-    optim= "Adam" #"SGD" # "RMSprop" #
-    units=100
-
-    model=Sequential()
-    model.add(LSTM(units,input_shape=(100,1), activation='sigmoid'))
-    # model.add(Dropout(.2))
-    # model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
-    # model.add(LSTM(25,return_sequences=True))
-    # model.add(LSTM(12))
-    model.add(Dense(1))
-
-    opt=tf.keras.optimizers.Adam(
-    learning_rate=lr,
-    name=optim,)
-    model.compile(loss='mean_squared_error',optimizer=opt)
-
-    model.summary()
-
-
-    
-
-
-
-    hist=model.fit(X_train,y_train,validation_data=(X_test,ytest),epochs=epochs,batch_size=batch,verbose=1)
-    print(hist.history)
-    model.save("saved_model_single/"+val+"/my_model.h5")
-    # model = keras.models.load_model("saved_model_single/"+val+"/my_model.h5")
-
-
-
+    # Train the Random Forest model
+    regressor = RandomForestRegressor(n_estimators=50, random_state=0)
+    regressor.fit(X_train, y_train.ravel())
 
     ### Lets Do the prediction and check performance metrics
-    train_predict=model.predict(X_train)
-    test_predict=model.predict(X_test)
+    train_predict=regressor.predict(X_train)
+    test_predict=regressor.predict(X_test)
 
     #Transformback to original form
-    train_predict=scaler.inverse_transform(train_predict)
-    test_predict=scaler.inverse_transform(test_predict)
+    train_predict=scaler.inverse_transform(train_predict.reshape(-1, 1))
+    test_predict=scaler.inverse_transform(test_predict.reshape(-1, 1))
 
     ### Calculate RMSE performance metrics
     import math
-    from sklearn.metrics import mean_squared_error
 
     y_train2=scaler.inverse_transform(y_train.reshape(-1,1))
     y_test2=scaler.inverse_transform(ytest.reshape(-1,1))
-    # y_train2=y_train.reshape(-1,1)
-    # y_test2=ytest.reshape(-1,1)
 
-    # print("Y_trsain: "+str(y_train2))
-    # print("train_predict: "+str(train_predict))
-
-    ### Train Data RMSE,MSE,MAPE,MAE
     train_err=math.sqrt(mean_squared_error(y_train2,train_predict))
     print("Train RMSE: "+str(train_err))
     print("Train MSE: "+str(mean_squared_error(y_train2,train_predict)))
     print("Train MAPE: "+str(MAPE(y_train2,train_predict)))
     print("Train MAE: "+str(mae(y_train2,train_predict)))
-    print("Train R2: " + str(r2_score(y_train2, train_predict)))
+    print("Test R2: " + str(r2_score(y_train2, train_predict)))
 
 
 
@@ -189,51 +154,121 @@ for val in stocks:
     print("Test MAE: "+str(mae(y_test2,test_predict)))
     print("Test R2: " + str(r2_score(y_test2, test_predict)))
 
-    ### Plotting 
-    # shift train predictions for plotting
-    look_back=100
-    trainPredictPlot = np.empty_like(df1)
-    trainPredictPlot[:, :] = np.nan
-    trainPredictPlot[look_back:len(train_predict)+look_back, :] = train_predict
-    # shift test predictions for plotting
-    testPredictPlot = np.empty_like(df1)
-    testPredictPlot[:, :] = np.nan
-    testPredictPlot[len(train_predict)+(look_back*2)+1:len(df1)-1, :] = test_predict
-    # plot baseline and predictions
-    plt.plot(scaler.inverse_transform(df1))
-    plt.plot(trainPredictPlot)
-    plt.plot(testPredictPlot)
-    plt.title('Model Prediction of Test and Train Data of '+val)
-    plt.ylabel('Stock Price')
-    plt.xlabel("Time(yr)")
-    # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
-    plt.legend(['Stock Price','Train', 'Test'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' train_test'+'.png')
-    plt.cla()
-    # plt.show()
+    
+    # batch=32
+    # epochs=30
+    # lr=0.01
+    # optim= "Adam" #"SGD" # "RMSprop" #
+    # units=100
+
+    # model=Sequential()
+    # model.add(LSTM(units,input_shape=(100,1), activation='sigmoid'))
+    # model.add(Dropout(.2))
+    # # model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
+    # # model.add(LSTM(25,return_sequences=True))
+    # # model.add(LSTM(12))
+    # model.add(Dense(1))
+
+    # opt=tf.keras.optimizers.Adam(
+    # learning_rate=lr,
+    # name=optim,)
+    # model.compile(loss='mean_squared_error',optimizer=opt)
+
+    # model.summary()
 
 
-    size=len(test_predict)
-    plt.plot(scaler.inverse_transform(df1)[-size:],color='#999991')
-    plt.plot(test_predict,color='#52c6cc',linestyle='dotted')
-    plt.title('Model Prediction of Test Data '+val)
-    plt.ylabel('Stock Price')
-    plt.xlabel("Time(days)")
-    # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
+    
+
+
+
+    # hist=model.fit(X_train,y_train,validation_data=(X_test,ytest),epochs=epochs,batch_size=batch,verbose=1)
+    # print(hist.history)
+    # model.save("saved_model_single/"+val+"/my_model.h5")
+    # # model = keras.models.load_model("saved_model_single/"+val+"/my_model.h5")
+
+
+
+
+    # ### Lets Do the prediction and check performance metrics
+    # train_predict=model.predict(X_train)
+    # test_predict=model.predict(X_test)
+
+    # #Transformback to original form
+    # train_predict=scaler.inverse_transform(train_predict)
+    # test_predict=scaler.inverse_transform(test_predict)
+
+    # ### Calculate RMSE performance metrics
+    # import math
+    # from sklearn.metrics import mean_squared_error
+
+    # y_train2=scaler.inverse_transform(y_train.reshape(-1,1))
+    # y_test2=scaler.inverse_transform(ytest.reshape(-1,1))
+    # # y_train2=y_train.reshape(-1,1)
+    # # y_test2=ytest.reshape(-1,1)
+
+    # # print("Y_trsain: "+str(y_train2))
+    # # print("train_predict: "+str(train_predict))
+
+    # ### Train Data RMSE,MSE,MAPE,MAE
+    # train_err=math.sqrt(mean_squared_error(y_train2,train_predict))
+    # print("Train RMSE: "+str(train_err))
+    # print("Train MSE: "+str(mean_squared_error(y_train2,train_predict)))
+    # print("Train MAPE: "+str(MAPE(y_train2,train_predict)))
+    # print("Train MAE: "+str(mae(y_train2,train_predict)))
+
+
+
+    # ### Test Data RMSE,MSE,MAPE,MAE
+    # test_err=math.sqrt(mean_squared_error(y_test2,test_predict))
+    # print("Test RMSE: "+str(test_err))
+    # print("Test MSE: "+str(mean_squared_error(y_test2,test_predict)))
+    # print("Test MAPE: "+str(MAPE(y_test2,test_predict)))
+    # print("Test MAE: "+str(mae(y_test2,test_predict)))
+
+    # ### Plotting 
+    # # shift train predictions for plotting
+    # look_back=100
+    # trainPredictPlot = np.empty_like(df1)
+    # trainPredictPlot[:, :] = np.nan
+    # trainPredictPlot[look_back:len(train_predict)+look_back, :] = train_predict
+    # # shift test predictions for plotting
+    # testPredictPlot = np.empty_like(df1)
+    # testPredictPlot[:, :] = np.nan
+    # testPredictPlot[len(train_predict)+(look_back*2)+1:len(df1)-1, :] = test_predict
+    # # plot baseline and predictions
+    # plt.plot(scaler.inverse_transform(df1))
+    # plt.plot(trainPredictPlot)
+    # plt.plot(testPredictPlot)
+    # plt.title('Model Prediction of Test and Train Data of '+val)
+    # plt.ylabel('Stock Price')
+    # plt.xlabel("Time(yr)")
+    # # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
+    # plt.legend(['Stock Price','Train', 'Test'], loc='upper left')
+    # plt.savefig('Graphs_Single_LSTM/'+val+' train_test'+'.png')
+    # plt.cla()
+    # # plt.show()
+
+
+    # size=len(test_predict)
+    # plt.plot(scaler.inverse_transform(df1)[-size:])
+    # plt.plot(test_predict,color='green')
+    # plt.title('Model Prediction of Test Data '+val)
+    # plt.ylabel('Stock Price')
+    # plt.xlabel("Time")
+    # # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
     # plt.legend(['Stock Price', 'Test'], loc='upper left')
-    plt.legend(['Actual', 'Predicted'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' test'+'.png')
-    plt.cla()
-    # plt.show()
+    # plt.savefig('Graphs_Single_LSTM/'+val+' test'+'.png')
+    # plt.cla()
+    # # plt.show()
 
-    plt.plot(hist.history['loss'])
-    plt.plot(hist.history['val_loss'])
-    plt.title('Model loss')
-    plt.ylabel('Loss')
-    plt.xlabel('Epoch')
-    plt.legend(['Train', 'Test'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' loss'+'.png')
-    # plt.show()
+    # plt.plot(hist.history['loss'])
+    # plt.plot(hist.history['val_loss'])
+    # plt.title('Model loss')
+    # plt.ylabel('Loss')
+    # plt.xlabel('Epoch')
+    # plt.legend(['Train', 'Test'], loc='upper left')
+    # plt.savefig('Graphs_Single_LSTM/'+val+' loss'+'.png')
+    # # plt.show()
 
 
 
