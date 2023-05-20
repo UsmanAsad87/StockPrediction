@@ -21,6 +21,7 @@ import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
 from tensorflow import keras
+from sklearn.metrics import mean_squared_error, r2_score
  
 
 from tensorflow.keras.models import Sequential
@@ -28,13 +29,20 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import LSTM
 from keras.layers import TimeDistributed
 from keras.layers import Bidirectional
+from keras.layers import Dropout
 import tensorflow as tf
 # tf.__version__
 
 
 
-stocks=['AAPL']
-#stocks=['AAPL','MSFT','GOOG','AMZN']
+stocks=['NVDA']
+# stocks=['AAPL','MSFT','NVDA','AMZN']
+colors = {
+    'AAPL': 'red',
+    'MSFT': 'blue',
+    'NVDA': 'green',
+    'AMZN': 'orange'
+}
 
 #Defining MAPE function
 def MAPE(Y_actual,Y_Predicted):
@@ -118,15 +126,16 @@ for val in stocks:
 
     
     batch=32
-    epochs=10
+    epochs=50
     lr=0.01
     optim= "Adam" #"SGD" # "RMSprop" #
-    units=50
+    units=100
 
     model=Sequential()
+    # model.add(LSTM(units,input_shape=(100,1), activation='sigmoid'))
     model.add(Bidirectional(LSTM(units, activation='sigmoid'), input_shape=(100, 1)))
-    # model.add(Bidirectional(LSTM(50, activation='sigmoid')))
-    # model.add(TimeDistributed(Dense(1, activation='sigmoid')))
+
+    # model.add(Dropout(.2))
     # model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
     # model.add(LSTM(25,return_sequences=True))
     # model.add(LSTM(12))
@@ -178,6 +187,7 @@ for val in stocks:
     print("Train MSE: "+str(mean_squared_error(y_train2,train_predict)))
     print("Train MAPE: "+str(MAPE(y_train2,train_predict)))
     print("Train MAE: "+str(mae(y_train2,train_predict)))
+    print("Train R2: " + str(r2_score(y_train2, train_predict)))
 
 
 
@@ -187,6 +197,7 @@ for val in stocks:
     print("Test MSE: "+str(mean_squared_error(y_test2,test_predict)))
     print("Test MAPE: "+str(MAPE(y_test2,test_predict)))
     print("Test MAE: "+str(mae(y_test2,test_predict)))
+    print("Test R2: " + str(r2_score(y_test2, test_predict)))
 
     ### Plotting 
     # shift train predictions for plotting
@@ -211,15 +222,16 @@ for val in stocks:
     plt.cla()
     # plt.show()
 
-
+    
     size=len(test_predict)
-    plt.plot(scaler.inverse_transform(df1)[-size:])
-    plt.plot(test_predict,color='green')
+    plt.plot(scaler.inverse_transform(df1)[-size:],color='#999991')
+    plt.plot(test_predict,color=colors[val],linestyle='dotted')
     plt.title('Model Prediction of Test Data '+val)
     plt.ylabel('Stock Price')
-    plt.xlabel("Time")
+    plt.xlabel("Time(days)")
     # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
-    plt.legend(['Stock Price', 'Test'], loc='upper left')
+    # plt.legend(['Stock Price', 'Test'], loc='upper left')
+    plt.legend(['Actual', 'Predicted'], loc='upper left')
     plt.savefig('Graphs_Single_LSTM/'+val+' test'+'.png')
     plt.cla()
     # plt.show()
