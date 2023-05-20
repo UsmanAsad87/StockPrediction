@@ -232,6 +232,6 @@ for val in stocks:
     plt.ylabel('Stock Price')
     plt.xlabel("Time(days)")
     plt.legend(['Actual', 'LSTM','Bi-LSTM','RBF','RFR'], loc='upper left')
-    plt.savefig('Graphs_all_models/'+val+' test'+'.png')
+    plt.savefig('Graphs_all_models/'+val+' test'+'.png',format="png",dpi=1200)
 
 
