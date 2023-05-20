@@ -310,7 +310,7 @@ for val in stocks:
 
     next_pred=scaler.inverse_transform(lst_output)
     for y in range(len(next_pred)):
-        if( y==0 or y==2 or y==6):
+        if( y==0 or y==2 or y==6 or y==29):
             print("Day "+str(y+1)+": "+ str(next_pred[y]))
     # for y in range(len(next_pred)):
     #     print("Day "+str(y+1)+": "+ str(next_pred[y]))

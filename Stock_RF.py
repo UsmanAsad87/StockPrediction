@@ -37,8 +37,8 @@ from sklearn.metrics import mean_squared_error, r2_score
 
 
 
-stocks=['AAPL']
-# stocks=['AAPL','MSFT','NVDA','AMZN']
+# stocks=['AAPL']
+stocks=['AAPL','MSFT','NVDA','AMZN']
 colors = {
     'AAPL': 'red',
     'MSFT': 'blue',
@@ -232,7 +232,7 @@ for val in stocks:
     next_pred=str(next_pred[0]).replace('[','').replace(']','').replace("  ",' ')
     next_pred_list=next_pred.split(" ")
     for y in range(len(next_pred_list)):
-        if( y==0 or y==2 or y==7):
+        if( y==0 or y==2 or y==6 or y==29):
             print("Day "+str(y+1)+": "+ str(next_pred_list[y]))
 
 
