@@ -161,37 +161,16 @@ for val in stocks:
     X_train =X_train.reshape(X_train.shape[0],X_train.shape[1] , 1)
     X_test = X_test.reshape(X_test.shape[0],X_test.shape[1] , 1)
 
-    ### Create the Stacked LSTM model
-
-    
 
     
     batch=32
     epochs=30
     lr=0.01
-    optim= "Adam" #"SGD" # "RMSprop" #
-    units=100
-
-    # model = Sequential()
-    # model.add(Dense(20, input_shape=(100,)))
-    # # model.add(RBFLayer(100, 0.5))
-    # model.add(RBFLayer(35, 0.5))
-    # model.add(RBFLayer(10, 0.2))
-    # # model.add(RBFLayer(20, 0.4))
-    # model.add(Dense(1))
-    # Train RMSE: 2.9294342184475144
-    # Train MSE: 8.5815848402112
-    # Train MAPE: 0.037427297216486605
-    # Train MAE: 1.8242746103076757
-    # Train R2: 0.9876530699536623
-    # Test RMSE: 14.90630603299295
-    # Test MSE: 222.197959549242
-    # Test MAPE: 0.07339924195611543
-    # Test MAE: 11.83595649266647
-    # Test    R2: -0.44630361658326345
+    optim= "Adam" 
+    units=20
 
     model = Sequential()
-    model.add(Dense(20, input_shape=(100,)))
+    model.add(Dense(units, input_shape=(100,)))
     # model.add(RBFLayer(100, 0.5))
     model.add(RBFLayer(30, 0.5))
     model.add(RBFLayer(10, 0.2))
@@ -210,8 +189,8 @@ for val in stocks:
 
 
 
-    hist=model.fit(X_train,y_train,validation_data=(X_test,ytest),epochs=epochs,batch_size=batch,verbose=1)
-    print(hist.history)
+    hist=model.fit(X_train,y_train,validation_data=(X_test,ytest),epochs=epochs,batch_size=batch,verbose=0)
+    # print(hist.history)
     model.save("saved_model_single/"+val+"/my_model.h5")
     # model = keras.models.load_model("saved_model_single/"+val+"/my_model.h5")
 

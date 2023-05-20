@@ -43,7 +43,7 @@ colors = {
     'NVDA': 'green',
     'AMZN': 'orange'
 }
-
+clrs = [ 'red', 'blue','green', 'orange']
 #Defining MAPE function
 def MAPE(Y_actual,Y_Predicted):
     # print(Y_actual)
