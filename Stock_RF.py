@@ -71,26 +71,22 @@ for val in stocks:
 
     df.tail()
 
-    df1=df['Close']
+    df1=df['Close'] 
 
-    df1
     plt.plot(df1)
     plt.title(val+' Dataset')
     plt.ylabel('Stock Price')
     plt.xlabel('Time(yr)')
     plt.legend(['Stock Price'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' Dataset'+'.png')
+    plt.savefig('Graphs_RF/'+val+' Dataset'+'.png')
     plt.cla()
     # plt.show()
 
-    ### LSTM are sensitive to the scale of the data. so we apply MinMax scaler
-    df1
+
 
     from sklearn.preprocessing import MinMaxScaler
     scaler=MinMaxScaler(feature_range=(0,1))
     df1=scaler.fit_transform(np.array(df1).reshape(-1,1))
-
-    # print(df1)
 
     ##splitting dataset into train and test split
     training_size=int(len(df1)*0.80)
@@ -118,8 +114,6 @@ for val in stocks:
     X_train = X_train.reshape(X_train.shape[0], X_train.shape[1])
     X_test = X_test.reshape(X_test.shape[0], X_test.shape[1])
 
-
-    ### Create the Stacked LSTM model
 
     # Train the Random Forest model
     regressor = RandomForestRegressor(
@@ -185,7 +179,7 @@ for val in stocks:
     plt.xlabel("Time(yr)")
     # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
     plt.legend(['Stock Price','Train', 'Test'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' train_test'+'.png')
+    plt.savefig('Graphs_RF/'+val+' train_test'+'.png')
     plt.cla()
     # plt.show()
 
@@ -197,7 +191,7 @@ for val in stocks:
     plt.ylabel('Stock Price')
     plt.xlabel("Time")
     plt.legend(['Stock Price', 'Test'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' test'+'.png')
+    plt.savefig('Graphs_RF/'+val+' test'+'.png')
     plt.cla()
 
 
