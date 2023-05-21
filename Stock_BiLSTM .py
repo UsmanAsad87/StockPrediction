@@ -46,11 +46,7 @@ colors = {
 clrs = [ 'red', 'blue','green', 'orange']
 #Defining MAPE function
 def MAPE(Y_actual,Y_Predicted):
-    # print(Y_actual)
-    # Y_actual=Y_actual+0.001
-    # Y_Predicted=Y_Predicted+0.001
     mape=mapeE(Y_actual,Y_Predicted)
-    # mape = np.mean(np.abs((Y_actual - Y_Predicted)/Y_actual))*100
     return mape
 
 # convert an array of values into a dataset matrix
@@ -75,18 +71,15 @@ for val in stocks:
 
     df1=df['Close']
 
-    df1
     plt.plot(df1)
     plt.title(val+' Dataset')
     plt.ylabel('Stock Price')
     plt.xlabel('Time(yr)')
     plt.legend(['Stock Price'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' Dataset'+'.png')
+    plt.savefig('Graphs_Bi_LSTM/'+val+' Dataset'+'.png')
     plt.cla()
     # plt.show()
 
-    ### LSTM are sensitive to the scale of the data. so we apply MinMax scaler
-    df1
 
     from sklearn.preprocessing import MinMaxScaler
     scaler=MinMaxScaler(feature_range=(0,1))
@@ -103,9 +96,6 @@ for val in stocks:
     print("Test Data Size: "+str(test_size))
    
 
-    # train_data
-
-
 
     # reshape into X=t,t+1,t+2,t+3 and Y=t+4
     time_step = 100
@@ -116,29 +106,20 @@ for val in stocks:
 
     print(X_test.shape), print(ytest.shape)
 
-    # reshape input to be [samples, time steps, features] which is required for LSTM
+    # reshape input to be [samples, time steps, features] which is required for Bi-LSTM
     X_train =X_train.reshape(X_train.shape[0],X_train.shape[1] , 1)
     X_test = X_test.reshape(X_test.shape[0],X_test.shape[1] , 1)
 
-    ### Create the Stacked LSTM model
-
-    
 
     
     batch=32
     epochs=50
     lr=0.01
-    optim= "Adam" #"SGD" # "RMSprop" #
+    optim= "Adam" 
     units=100
 
     model=Sequential()
-    # model.add(LSTM(units,input_shape=(100,1), activation='sigmoid'))
     model.add(Bidirectional(LSTM(units, activation='sigmoid'), input_shape=(100, 1)))
-
-    # model.add(Dropout(.2))
-    # model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
-    # model.add(LSTM(25,return_sequences=True))
-    # model.add(LSTM(12))
     model.add(Dense(1))
 
     opt=tf.keras.optimizers.Adam(
@@ -154,9 +135,9 @@ for val in stocks:
 
 
     hist=model.fit(X_train,y_train,validation_data=(X_test,ytest),epochs=epochs,batch_size=batch,verbose=1)
-    print(hist.history)
-    model.save("saved_model_single/"+val+"/my_model.h5")
-    # model = keras.models.load_model("saved_model_single/"+val+"/my_model.h5")
+    # print(hist.history)
+    model.save("saved_bi_lstm_model_single/"+val+"/my_model.h5")
+    # model = keras.models.load_model("saved_bi_lstm_model_single/"+val+"/my_model.h5")
 
 
 
@@ -175,11 +156,6 @@ for val in stocks:
 
     y_train2=scaler.inverse_transform(y_train.reshape(-1,1))
     y_test2=scaler.inverse_transform(ytest.reshape(-1,1))
-    # y_train2=y_train.reshape(-1,1)
-    # y_test2=ytest.reshape(-1,1)
-
-    # print("Y_trsain: "+str(y_train2))
-    # print("train_predict: "+str(train_predict))
 
     ### Train Data RMSE,MSE,MAPE,MAE
     train_err=math.sqrt(mean_squared_error(y_train2,train_predict))
@@ -218,7 +194,7 @@ for val in stocks:
     plt.xlabel("Time(yr)")
     # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
     plt.legend(['Stock Price','Train', 'Test'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' train_test'+'.png')
+    plt.savefig('Graphs_Bi_LSTM/'+val+' train_test'+'.png')
     plt.cla()
     # plt.show()
 
@@ -232,7 +208,7 @@ for val in stocks:
     # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
     # plt.legend(['Stock Price', 'Test'], loc='upper left')
     plt.legend(['Actual', 'Predicted'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' test'+'.png')
+    plt.savefig('Graphs_Bi_LSTM/'+val+' test'+'.png')
     plt.cla()
     # plt.show()
 
@@ -242,7 +218,7 @@ for val in stocks:
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Test'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' loss'+'.png')
+    plt.savefig('Graphs_Bi_LSTM/'+val+' loss'+'.png')
     # plt.show()
 
 

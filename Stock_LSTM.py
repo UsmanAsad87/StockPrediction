@@ -81,7 +81,7 @@ for val in stocks:
     plt.ylabel('Stock Price')
     plt.xlabel('Time(yr)')
     plt.legend(['Stock Price'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' Dataset'+'.png')
+    plt.savefig('Graphs_LSTM/'+val+' Dataset'+'.png')
     plt.cla()
     # plt.show()
 
@@ -103,9 +103,6 @@ for val in stocks:
     print("Test Data Size: "+str(test_size))
    
 
-    # train_data
-
-
 
     # reshape into X=t,t+1,t+2,t+3 and Y=t+4
     time_step = 100
@@ -120,15 +117,12 @@ for val in stocks:
     X_train =X_train.reshape(X_train.shape[0],X_train.shape[1] , 1)
     X_test = X_test.reshape(X_test.shape[0],X_test.shape[1] , 1)
 
-    ### Create the Stacked LSTM model
-
-    
 
     
     batch=32
     epochs=30
     lr=0.01
-    optim= "Adam" #"SGD" # "RMSprop" #
+    optim= "Adam"
     units=100
 
     model=Sequential()
@@ -149,8 +143,8 @@ for val in stocks:
 
     hist=model.fit(X_train,y_train,validation_data=(X_test,ytest),epochs=epochs,batch_size=batch,verbose=0)
     print(hist.history)
-    model.save("saved_model_single/"+val+"/my_model.h5")
-    # model = keras.models.load_model("saved_model_single/"+val+"/my_model.h5")
+    model.save("saved_lstm_model_single/"+val+"/my_model.h5")
+    # model = keras.models.load_model("saved_lstm_model_single/"+val+"/my_model.h5")
 
 
 
@@ -212,7 +206,7 @@ for val in stocks:
     plt.xlabel("Time(yr)")
     # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
     plt.legend(['Stock Price','Train', 'Test'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' train_test'+'.png')
+    plt.savefig('Graphs_LSTM/'+val+' train_test'+'.png')
     plt.cla()
     # plt.show()
 
@@ -226,7 +220,7 @@ for val in stocks:
     # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
     # plt.legend(['Stock Price', 'Test'], loc='upper left')
     plt.legend(['Actual', 'Predicted'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' test'+'.png')
+    plt.savefig('Graphs_LSTM/'+val+' test'+'.png')
     plt.cla()
     # plt.show()
 
@@ -236,7 +230,7 @@ for val in stocks:
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Test'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' loss'+'.png')
+    plt.savefig('Graphs_LSTM/'+val+' loss'+'.png')
     # plt.show()
 
 

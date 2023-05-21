@@ -116,24 +116,20 @@ for val in stocks:
 
     df1=df['Close']
 
-    df1
     plt.plot(df1)
     plt.title(val+' Dataset')
     plt.ylabel('Stock Price')
     plt.xlabel('Time(yr)')
     plt.legend(['Stock Price'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' Dataset'+'.png')
+    plt.savefig('Graphs_RBF/'+val+' Dataset'+'.png')
     plt.cla()
     # plt.show()
 
-    ### LSTM are sensitive to the scale of the data. so we apply MinMax scaler
-    df1
+
 
     from sklearn.preprocessing import MinMaxScaler
     scaler=MinMaxScaler(feature_range=(0,1))
     df1=scaler.fit_transform(np.array(df1).reshape(-1,1))
-
-    # print(df1)
 
     ##splitting dataset into train and test split
     training_size=int(len(df1)*0.80)
@@ -144,10 +140,6 @@ for val in stocks:
     print("Test Data Size: "+str(test_size))
    
 
-    # train_data
-
-
-
     # reshape into X=t,t+1,t+2,t+3 and Y=t+4
     time_step = 100
     X_train, y_train = create_dataset(train_data, time_step)
@@ -157,7 +149,6 @@ for val in stocks:
 
     print(X_test.shape), print(ytest.shape)
 
-    # reshape input to be [samples, time steps, features] which is required for LSTM
     X_train =X_train.reshape(X_train.shape[0],X_train.shape[1] , 1)
     X_test = X_test.reshape(X_test.shape[0],X_test.shape[1] , 1)
 
@@ -171,10 +162,8 @@ for val in stocks:
 
     model = Sequential()
     model.add(Dense(units, input_shape=(100,)))
-    # model.add(RBFLayer(100, 0.5))
     model.add(RBFLayer(30, 0.5))
     model.add(RBFLayer(10, 0.2))
-    # model.add(RBFLayer(20, 0.4))
     model.add(Dense(1))
 
     opt=tf.keras.optimizers.Adam(
@@ -190,9 +179,8 @@ for val in stocks:
 
 
     hist=model.fit(X_train,y_train,validation_data=(X_test,ytest),epochs=epochs,batch_size=batch,verbose=0)
-    # print(hist.history)
-    model.save("saved_model_single/"+val+"/my_model.h5")
-    # model = keras.models.load_model("saved_model_single/"+val+"/my_model.h5")
+    model.save("saved_rbf_model_single/"+val+"/my_model.h5")
+    # model = keras.models.load_model("saved_rbf_model_single/"+val+"/my_model.h5")
 
 
 
@@ -211,11 +199,7 @@ for val in stocks:
 
     y_train2=scaler.inverse_transform(y_train.reshape(-1,1))
     y_test2=scaler.inverse_transform(ytest.reshape(-1,1))
-    # y_train2=y_train.reshape(-1,1)
-    # y_test2=ytest.reshape(-1,1)
 
-    # print("Y_trsain: "+str(y_train2))
-    # print("train_predict: "+str(train_predict))
 
     ### Train Data RMSE,MSE,MAPE,MAE
     train_err=math.sqrt(mean_squared_error(y_train2,train_predict))
@@ -252,9 +236,8 @@ for val in stocks:
     plt.title('Model Prediction of Test and Train Data of '+val)
     plt.ylabel('Stock Price')
     plt.xlabel("Time(yr)")
-    # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
     plt.legend(['Stock Price','Train', 'Test'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' train_test'+'.png')
+    plt.savefig('Graphs_RBF/'+val+' train_test'+'.png')
     plt.cla()
     # plt.show()
 
@@ -265,10 +248,8 @@ for val in stocks:
     plt.title('Model Prediction of Test Data '+val)
     plt.ylabel('Stock Price')
     plt.xlabel("Time(days)")
-    # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
-    # plt.legend(['Stock Price', 'Test'], loc='upper left')
     plt.legend(['Actual', 'Predicted'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' test'+'.png')
+    plt.savefig('Graphs_RBF/'+val+' test'+'.png')
     plt.cla()
     # plt.show()
 
@@ -278,7 +259,7 @@ for val in stocks:
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Test'], loc='upper left')
-    plt.savefig('Graphs_Single_LSTM/'+val+' loss'+'.png')
+    plt.savefig('Graphs_RBF/'+val+' loss'+'.png')
     # plt.show()
 
 
