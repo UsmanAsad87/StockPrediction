@@ -38,7 +38,13 @@ from sklearn.metrics import mean_squared_error, r2_score
 
 
 # stocks=['AAPL']
-stocks=['NVDA','AMZN']
+stocks=['AAPL','MSFT','NVDA','AMZN']
+colors = {
+    'AAPL': 'red',
+    'MSFT': 'blue',
+    'NVDA': 'green',
+    'AMZN': 'orange'
+}
 
 #Defining MAPE function
 def MAPE(Y_actual,Y_Predicted):
@@ -190,98 +196,43 @@ for val in stocks:
     plt.title('Model Prediction of Test Data '+val)
     plt.ylabel('Stock Price')
     plt.xlabel("Time")
-    # plt.xlabel('Time(yr)\nTrain RMSE: '+str(train_err)+" \nTest RMSE: "+str(test_err))
     plt.legend(['Stock Price', 'Test'], loc='upper left')
     plt.savefig('Graphs_Single_LSTM/'+val+' test'+'.png')
     plt.cla()
-    # plt.show()
-
-    # plt.plot(hist.history['loss'])
-    # plt.plot(hist.history['val_loss'])
-    # plt.title('Model loss')
-    # plt.ylabel('Loss')
-    # plt.xlabel('Epoch')
-    # plt.legend(['Train', 'Test'], loc='upper left')
-    # plt.savefig('Graphs_Single_LSTM/'+val+' loss'+'.png')
-    # # plt.show()
 
 
 
+    #NEXT 30 days Prediction.
+    x_input=test_data[len(test_data)-100:].reshape(1,-1)
+    temp_input=list(x_input)
+    temp_input=temp_input[0].tolist()
+    temp_input
+    lst_output=[]
+    n_steps=100
+    i=0
+    while(i<30):
+        if(len(temp_input)>100):
+            x_input=np.array(temp_input[1:])
+            x_input=x_input.reshape(1,-1)
+            # x_input = x_input.reshape((1, n_steps, 1))
+            yhat = regressor.predict(x_input)
+            temp_input.extend(yhat.tolist())
+            temp_input=temp_input[1:]
+            lst_output.extend(yhat.tolist())
+            i=i+1
+        else:
+            # x_input = x_input.reshape((1, n_steps,1))
+            yhat = regressor.predict(x_input)
+            temp_input.extend(yhat.tolist())
+            lst_output.extend(yhat.tolist())
+            i=i+1
 
-# #NEXT 30 days Prediction.
-# # len(test_data)
+    lst_output = np.array(lst_output)
+    next_pred=scaler.inverse_transform(lst_output.reshape(1,-1))
+    next_pred=str(next_pred[0]).replace('[','').replace(']','').replace("  ",' ')
+    next_pred_list=next_pred.split(" ")
+    for y in range(len(next_pred_list)):
+        if( y==0 or y==2 or y==6 or y==29):
+            print("Day "+str(y+1)+": "+ str(next_pred_list[y]))
 
-# # x_input=test_data[len(test_data)-100:].reshape(1,-1)
-# # x_input.shape
-
-
-
-
-
-# # temp_input=list(x_input)
-# # temp_input=temp_input[0].tolist()
-
-# # temp_input
-
-# # # demonstrate prediction for next 10 days
-# # from numpy import array
-
-# # lst_output=[]
-# # n_steps=100
-# # i=0
-# # while(i<30):
-    
-# #     if(len(temp_input)>100):
-# #         #print(temp_input)
-# #         x_input=np.array(temp_input[1:])
-# #         # print("{} day input {}".format(i,x_input))
-# #         x_input=x_input.reshape(1,-1)
-# #         x_input = x_input.reshape((1, n_steps, 1))
-# #         #print(x_input)
-# #         yhat = model.predict(x_input, verbose=0)
-# #         # print("{} day output {}".format(i,yhat))
-# #         temp_input.extend(yhat[0].tolist())
-# #         temp_input=temp_input[1:]
-# #         #print(temp_input)
-# #         lst_output.extend(yhat.tolist())
-# #         i=i+1
-# #     else:
-# #         x_input = x_input.reshape((1, n_steps,1))
-# #         yhat = model.predict(x_input, verbose=0)
-# #         # print(yhat[0])
-# #         temp_input.extend(yhat[0].tolist())
-# #         # print(len(temp_input))
-# #         lst_output.extend(yhat.tolist())
-# #         i=i+1
-    
-
-# # # print(lst_output)
-
-# # day_new=np.arange(1,101)
-# # day_pred=np.arange(101,131)
-
-# # import matplotlib.pyplot as plt
-
-# # len(df1)
-
-
-
-# # plt.plot(day_new,scaler.inverse_transform(df1[len(df1)-100:]))
-# # plt.plot(day_pred,scaler.inverse_transform(lst_output))
-# # plt.title('Model accuracy')
-# # plt.ylabel('Accuracy')
-# # plt.xlabel('Epoch')
-# # plt.legend(['Train', 'Test'], loc='upper left')
-# # plt.show()
-
-# # df3=df1.tolist()
-# # df3.extend(lst_output)
-# # plt.plot(df3[2200:])
-# # plt.show()
-
-
-# # df3=scaler.inverse_transform(df3).tolist()
-
-# # plt.plot(df3)
-# # plt.show()
 
