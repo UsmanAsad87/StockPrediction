@@ -81,7 +81,7 @@ for val in stocks:
     plt.ylabel('Stock Price')
     plt.xlabel('Time(yr)')
     plt.legend(['Stock Price'], loc='upper left')
-    plt.savefig('Graphs_LSTM/'+val+' Dataset'+'.png')
+    plt.savefig('Graphs_LSTM/'+val+' Dataset'+'.png',format="png",dpi=1500)
     plt.cla()
     # plt.show()
 
