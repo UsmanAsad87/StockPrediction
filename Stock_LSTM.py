@@ -96,11 +96,12 @@ for val in stocks:
 
     ##splitting dataset into train and test split
     training_size=int(len(df1)*0.80)
-    test_size=len(df1)-training_size
-    train_data,test_data=df1[0:training_size,:],df1[training_size:len(df1),:1]
+    # test_size=len(df1)-training_size
+    # train_data,test_data=df1[0:training_size,:],df1[training_size:len(df1),:1]
+    train_data,test_data,last30=df1[0:training_size,:],df1[training_size:len(df1)-30,:1],df1[len(df1)-30:len(df1),:]
 
-    print("Train Data Size: "+str(training_size))
-    print("Test Data Size: "+str(test_size))
+    # print("Train Data Size: "+str(training_size))
+    # print("Test Data Size: "+str(test_size))
    
 
 
@@ -196,7 +197,7 @@ for val in stocks:
     # shift test predictions for plotting
     testPredictPlot = np.empty_like(df1)
     testPredictPlot[:, :] = np.nan
-    testPredictPlot[len(train_predict)+(look_back*2)+1:len(df1)-1, :] = test_predict
+    testPredictPlot[len(train_predict)+(look_back*2)+1:len(df1)-1-30, :] = test_predict
     # plot baseline and predictions
     plt.plot(scaler.inverse_transform(df1))
     plt.plot(trainPredictPlot)
@@ -212,8 +213,8 @@ for val in stocks:
 
     
     size=len(test_predict)
-    plt.plot(scaler.inverse_transform(df1)[-size:],color='#999991')
-    plt.plot(test_predict,color=colors[val],linestyle='dotted')
+    plt.plot(scaler.inverse_transform(df1)[-size:],color='black')
+    plt.plot(test_predict,color=colors[val])
     plt.title('Model Prediction of Test Data '+val)
     plt.ylabel('Stock Price')
     plt.xlabel("Time(days)")
@@ -263,10 +264,15 @@ for val in stocks:
             i=i+1
 
     next_pred=scaler.inverse_transform(lst_output)
+    print('Predicted Values: ')
     for y in range(len(next_pred)):
         if( y==0 or y==2 or y==6 or y==29):
             print("Day "+str(y+1)+": "+ str(next_pred[y]))
-    
+    last30=scaler.inverse_transform(last30.reshape(-1,1))
+    print('Real Values: ')
+    for y in range(len(last30)):
+        if( y==0 or y==2 or y==6 or y==29):
+            print("Day "+str(y+1)+": "+ str(last30[y]))
     # for y in range(len(next_pred)):
     #     print("Day "+str(y+1)+": "+ str(next_pred[y]))
 
